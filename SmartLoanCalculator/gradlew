@@ -1,0 +1,15 @@
+#!/bin/sh
+# Self-bootstrapping Gradle launcher. It downloads Gradle on first run.
+set -eu
+GRADLE_VERSION=8.9
+GRADLE_ROOT="${GRADLE_USER_HOME:-$HOME/.gradle}/wrapper/dists"
+GRADLE_HOME="$GRADLE_ROOT/gradle-${GRADLE_VERSION}"
+if [ ! -x "$GRADLE_HOME/bin/gradle" ]; then
+  mkdir -p "$GRADLE_ROOT"
+  archive="$GRADLE_ROOT/gradle-${GRADLE_VERSION}-bin.zip"
+  if [ ! -f "$archive" ]; then
+    if command -v curl >/dev/null 2>&1; then curl -fsSL "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" -o "$archive"; else wget -q "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" -O "$archive"; fi
+  fi
+  unzip -q -o "$archive" -d "$GRADLE_ROOT"
+fi
+exec "$GRADLE_HOME/bin/gradle" "$@"
